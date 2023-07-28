@@ -49,7 +49,7 @@ sub say2 {
 }
 
 sub trace {
-    gl_log( "\t" . join( ",", @_[ 1 .. $#_ ] ) ) if $_[0] <= 1 and defined $Gitolite::Rc::rc{LOG_EXTRA};
+    gl_log( "\t" . join( ",", @_[ 1 .. $#_ ] ) ) if defined $Gitolite::Rc::rc{LOG_EXTRA} and $_[0] <= $Gitolite::Rc::rc{LOG_EXTRA};
 
     return unless defined( $ENV{D} );
 
