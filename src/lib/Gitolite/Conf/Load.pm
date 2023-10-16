@@ -338,7 +338,11 @@ sub load_1 {
 
         for my $r (@repos) {
             for my $u (@users) {
-                push @rules, @{ $repos{$r}{$u} } if exists $repos{$r} and exists $repos{$r}{$u};
+                if (exists $repos{$r}) {
+                    if (exists $repos{$r}{$u}) {
+                        push @rules, @{ $repos{$r}{$u} };
+                    }
+                }
             }
         }
 
