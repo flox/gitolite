@@ -443,7 +443,7 @@ sub data_version_mismatch {
     return $data_version ne glrc('current-data-version');
 }
 
-sub user_roles {
+sub legacy_user_roles {
     my ( $user, $repo, @eg ) = @_;
 
     # eg == existing groups (that user is already known to be a member of)
@@ -479,6 +479,63 @@ sub user_roles {
     }
 
     return keys %ret;
+}
+
+#
+# Flox version of the user_roles() function:
+# - marshals API query for authorization results
+# - if fails, falls back to legacy user_roles() function
+#
+# Sample data:
+#
+#   $user = 'limeytexan';
+#   $repo = 'limeytexan/floxmeta';
+#   @eg = [ 'limeytexan', '@all' ];
+#   --> return [ '@CREATOR', '@READERS' ];
+#
+#   $user = 'limeytexan';
+#   $repo = 'flox/floxmeta';
+#   @eg = [ 'limeytexan', '@all' ];
+#   --> return [ '@READERS', '@WRITERS' ];
+#
+#   $user = 'limeytexan';
+#   $repo = 'samrose/floxmeta';
+#   @eg = [ 'limeytexan', '@all' ];
+#   --> return [ '@READERS' ];
+#
+#   $user = 'floxtest';
+#   $repo = 'floxtest/floxmeta';
+#   @eg = [ 'floxtest', '@all' ];
+#   --> return [ '@READERS', '@CREATOR' ];
+#
+sub user_roles {
+    my ( $user, $repo, @eg ) = @_;
+
+    # TODO: call out to API.
+    # For now, just implement a simple fixed heuristic:
+    # - if permissions file exists in the expected location then use that
+    if ( -f "$rc{GL_REPO_BASE}/$repo.git/gl-perms" ) {
+        return legacy_user_roles( @_ );
+    }
+
+    # - else give everyone read access to everything
+    my @retval = ( '@READERS' );
+
+    # - and give owners '@CREATOR' access to their repos
+    my ( $owner, $project ) = split('/', $repo, 2);
+    if ( $owner eq $user ) {
+        push @retval, '@CREATOR';
+    }
+    if (0) { # Change to 1 to enable debug.
+      open TMPDEBUG, '>>', '/tmp/debug.out' || die "Cannot open /tmp/debug.out: $!";
+      print TMPDEBUG
+        "\$user = '$user';\n" .
+        "\$repo = '$repo';\n" .
+        "\@eg = [ '" . join("', '", @eg) . "' ];\n" .
+        "--> return [ '" . join("', '", @retval) . "' ];\n";
+      close TMPDEBUG;
+    }
+    return @retval;
 }
 
 sub generic_name {
