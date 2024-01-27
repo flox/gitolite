@@ -1,6 +1,7 @@
 { self
 , stdenv
 , coreutils
+, findutils
 , fetchFromGitHub
 , git
 , lib
@@ -28,13 +29,13 @@ stdenv.mkDerivation rec {
       --replace /usr/bin/perl "${perl}/bin/perl"
     substituteInPlace src/lib/Gitolite/Hooks/Update.pm \
       --replace /usr/bin/perl "${perl}/bin/perl"
-    substituteInPlace src/lib/Gitolite/Setup.pm \
-      --replace hostname "${nettools}/bin/hostname"
     substituteInPlace src/commands/sskm \
       --replace /bin/rm "${coreutils}/bin/rm"
   '';
 
   postFixup = ''
+    wrapProgram $out/bin/gitolite \
+      --prefix PATH : ${lib.makeBinPath [ git openssh (perl.withPackages (p: [ p.JSON ])) coreutils findutils nettools ]}
     wrapProgram $out/bin/gitolite-shell \
       --prefix PATH : ${lib.makeBinPath [ git openssh (perl.withPackages (p: [ p.JSON ])) ]}
   '';
