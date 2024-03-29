@@ -2,6 +2,7 @@
 , stdenv
 , coreutils
 , fetchFromGitHub
+, gawk
 , git
 , lib
 , makeWrapper
@@ -36,7 +37,7 @@ stdenv.mkDerivation rec {
 
   postFixup = ''
     wrapProgram $out/bin/gitolite-shell \
-      --prefix PATH : ${lib.makeBinPath [ git openssh (perl.withPackages (p: [ p.JSON ])) ]}
+      --prefix PATH : ${lib.makeBinPath [ gawk git openssh (perl.withPackages (p: [ p.JSON ])) ]}
   '';
 
   installPhase = ''
