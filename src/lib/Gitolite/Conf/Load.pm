@@ -521,9 +521,10 @@ sub user_roles {
     # - else give everyone read access to everything
     my @retval = ( '@READERS' );
 
-    # - and give owners '@CREATOR' access to their repos
+    # - and give owners '@CREATOR' access to their repos 
+    # - http_anonymous user should never receive a CREATOR role
     my ( $owner, $project ) = split('/', $repo, 2);
-    if ( $owner eq $user ) {
+    if ( $owner eq $user and $user ne 'http_anonymous') {
         push @retval, '@CREATOR';
     }
     if (0) { # Change to 1 to enable debug.
