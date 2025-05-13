@@ -518,7 +518,15 @@ sub user_roles {
         return legacy_user_roles( @_ );
     }
 
-    # - else give everyone read access to everything
+    # Check for the GL_ROLES environment variable which is passed from the
+    # server to indicate the user's roles for this repo.
+    if ( $ENV{GL_ROLES} ) {
+        my @roles = split( /\s+/, $ENV{GL_ROLES} );
+        return map { '@' . $_ } @roles;
+    }
+
+    # Otherwise fall back to the previous behavior. All users have read access
+    # and users get creator access on their own repos.
     my @retval = ( '@READERS' );
 
     # - and give owners '@CREATOR' access to their repos 
